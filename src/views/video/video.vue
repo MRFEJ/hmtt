@@ -1,5 +1,5 @@
 <template>
-  <router-view></router-view>
+  <div>视频</div>
 </template>
 
 <script>
@@ -9,7 +9,5 @@ export default {
 </script>
 
 <style>
-html,body,.box{
-  height: 100%;
-}
+
 </style>

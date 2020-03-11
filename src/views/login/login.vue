@@ -40,11 +40,10 @@ export default {
         this.isok = true;
         try {
           let res = await login(this.form);
-          // window.console.log(res);
+          // window.console.log(res.data);
           this.$store.commit("myToken", res.data.token);
           this.$store.commit("resToken", res.data.refresh_token);
-          setToken("myToken", JSON.stringify(res.data.token));
-          setToken("resToken", JSON.stringify(res.data.refresh_token));
+          setToken("myToken", JSON.stringify(res.data));
           this.$toast.success("登录成功");
           this.$router.push("/home");
         } catch (error) {
@@ -78,6 +77,9 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.box {
+  background-color: #f5f7f9;
+}
 .van-nav-bar.van-hairline--bottom {
   background-color: #1989fa;
   .van-nav-bar__title.van-ellipsis {

@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <div class="h_top">
-      <van-icon class="t_icon" name="wap-nav" />
+      <van-icon class="t_icon" name="wap-nav" @click="$refs.popup.show=true" />
       <van-search
         class="search"
         v-model="value"
@@ -12,79 +12,95 @@
       <van-icon class="t_icon" name="search" />
     </div>
     <div class="dabel">
-      <van-tabs v-model="active">
+      <van-tabs>
         <van-tab v-for="(item, index) in tabList" :key="index" :title="item.name">
-          <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
-            <van-list v-model="loading" :finished="finished" finished-text="没有更多了" @load="onLoad">
-              <van-cell v-for="item in list" :key="item" :title="item" />
+          <van-pull-refresh v-model="item.isLoading" @refresh="onRefresh(item)">
+            <van-list
+              v-model="item.loading"
+              :finished="item.finished"
+              finished-text="没有更多了"
+              @load="onLoad(item)"
+            >
+              <van-cell v-for="(it,index) in item.list" :key="index" :title="it.title" />
             </van-list>
           </van-pull-refresh>
         </van-tab>
       </van-tabs>
     </div>
+    <!-- 弹出层 -->
+    <popup :pd_list="tabList" ref="popup" />
   </div>
 </template>
 
 <script>
-import { userChannels } from "@/api/home.js";
+import { userChannels, userArticles } from "@/api/home.js";
+
+// 弹出层
+import popup from "./components/popup"
 export default {
+  components:{
+    popup
+  },
   data() {
     return {
       // 频道数组
       tabList: [],
-      // 下拉刷新
-      isLoading: false,
       active: "",
-      value: "",
-      list: [],
-      // 列表数据下拉加载数据
-      loading: false,
-      // 是否加载完毕
-      finished: false
+      value: ""
     };
   },
   async created() {
     let res = await userChannels();
-    window.console.log(res);
+    // window.console.log(res);
     this.tabList = res.data.channels;
+    this.tabList.forEach(item => {
+      // item.loading = false;
+      this.$set(item, "loading", false);
+      // item.finished = false;
+      this.$set(item, "finished", false);
+
+      // item.list = [];
+      this.$set(item, "list", []);
+
+      // item.isLoading = false;
+      this.$set(item, "isLoading", false);
+
+      item.pre_data = Date.now();
+    });
   },
   methods: {
     // 列表数据加载执行的函数
-    onLoad() {
-      let arr = [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        16,
-        17,
-        18,
-        19,
-        20
-      ];
-      this.list.push(...arr);
-      if (this.list.length > 100) {
-        this.finished = true;
+    async onLoad(item) {
+      let res = await userArticles({
+        channel_id: item.id,
+        timestamp: item.pre_data,
+        with_top: 0
+      });
+
+      let arr = res.data.results;
+      // window.console.log(item.id,item.pre_data);
+
+      if (arr.length == 0) {
+        item.finished = true;
+        // window.console.log("111");
+      } else {
+        item.list.push(...arr);
+
+        window.console.log(res);
+        item.pre_data = res.data.pre_timestamp;
+
+        item.loading = false;
       }
-      this.loading = false;
     },
 
     // 下拉列表刷新的函数
-    onRefresh() {
-      window.setTimeout(() => {
-        this.isLoading = false;
-      }, 1000);
+    onRefresh(item) {
+      item.loading = false;
+      item.finished = false;
+      item.list = [];
+      item.pre_data = Date.now();
+      this.onLoad(item);
+      item.isLoading = false;
     }
   }
 };
@@ -120,6 +136,6 @@ export default {
   .dabel {
     margin-top: 98px;
     margin-bottom: 50px;
-}
+  }
 }
 </style>

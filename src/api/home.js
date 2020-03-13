@@ -17,11 +17,19 @@ export function userArticles(params) {
     })
 }
 
-
-// 获取宣布频道
+// 获取全部频道
 export function userAllChannels() {
     return requery({
         url: 'channels',
         method: 'get'
+    })
+}
+
+// 添加用户频道
+export function addChannels(data) {
+    return requery({
+        url: 'user/channels',
+        method: 'PUT',
+        data
     })
 }

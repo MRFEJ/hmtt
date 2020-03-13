@@ -21,7 +21,32 @@
               finished-text="没有更多了"
               @load="onLoad(item)"
             >
-              <van-cell v-for="(it,index) in item.list" :key="index" :title="it.title" />
+              <van-cell border v-for="(it,index) in item.list" :key="index">
+                <template slot="title">
+                  <van-grid :border="false" :column-num="3" v-if="it.cover.type==3">
+                    <div class="title">{{it.title}}</div>
+                    <van-grid-item v-for="(item, index) in it.cover.images" :key="index">
+                      <van-image :src="item" />
+                    </van-grid-item>
+                  </van-grid>
+
+                  <div class="one" v-if="it.cover.type==1">
+                    <span class="title">{{it.title}}</span>
+                    <van-image :src="it.cover.images[0]" />
+                  </div>
+
+                  <div class="writer">
+                    <div>
+                      <span>{{it.aut_name}}</span>
+                      <span>{{it.comm_count}}评论</span>
+                      <span>{{it.pubdate | filterData}}</span>
+                    </div>
+                    <div class="icon">
+                      <van-icon name="cross" />
+                    </div>
+                  </div>
+                </template>
+              </van-cell>
             </van-list>
           </van-pull-refresh>
         </van-tab>
@@ -36,9 +61,10 @@
 import { userChannels, userArticles } from "@/api/home.js";
 
 // 弹出层
-import popup from "./components/popup"
+import popup from "./components/popup";
 export default {
-  components:{
+  name: "home",
+  components: {
     popup
   },
   data() {
@@ -50,6 +76,7 @@ export default {
     };
   },
   async created() {
+    // 获取用户频道
     let res = await userChannels();
     // window.console.log(res);
     this.tabList = res.data.channels;
@@ -78,15 +105,14 @@ export default {
       });
 
       let arr = res.data.results;
-      // window.console.log(item.id,item.pre_data);
+      window.console.log(res);
 
       if (arr.length == 0) {
         item.finished = true;
-        // window.console.log("111");
       } else {
         item.list.push(...arr);
 
-        window.console.log(res);
+        // window.console.log(res);
         item.pre_data = res.data.pre_timestamp;
 
         item.loading = false;
@@ -94,12 +120,19 @@ export default {
     },
 
     // 下拉列表刷新的函数
-    onRefresh(item) {
+    async onRefresh(item) {
       item.loading = false;
       item.finished = false;
-      item.list = [];
       item.pre_data = Date.now();
-      this.onLoad(item);
+
+      let res = await userArticles({
+        channel_id: item.id,
+        timestamp: item.pre_data,
+        with_top: 0
+      });
+
+      item.list = res.data.results;
+
       item.isLoading = false;
     }
   }
@@ -136,6 +169,51 @@ export default {
   .dabel {
     margin-top: 98px;
     margin-bottom: 50px;
+    .van-cell {
+      .van-cell__title {
+        .title {
+          font-size: 16px;
+          font-weight: 500;
+          color: #3a3a3a;
+          letter-spacing: 1px;
+          font-stretch: normal;
+          padding: 8px 12px;
+          -ms-flex-preferred-size: 70%;
+          flex-basis: 70%;
+          text-align: left;
+        }
+        .van-image {
+          height: 73px;
+        }
+        .one {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 16px;
+          .van-image{
+            width: 116px;
+            height: 73px;
+          }
+        }
+        .writer {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          div {
+            span {
+              margin-right: 5px;
+            }
+          }
+        }
+        .icon {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          width: 23px;
+          height: 15px;
+          border: 0.5px solid #edeff3;
+        }
+      }
+    }
   }
 }
 </style>

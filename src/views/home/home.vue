@@ -23,17 +23,16 @@
             >
               <van-cell border v-for="(it,index) in item.list" :key="index">
                 <template slot="title">
+                  <div class="one" >
+                    <span class="title">{{it.title}}</span>
+                    <van-image :src="it.cover.images[0]" v-if="it.cover.type==1" />
+                  </div>
+
                   <van-grid :border="false" :column-num="3" v-if="it.cover.type==3">
-                    <div class="title">{{it.title}}</div>
                     <van-grid-item v-for="(item, index) in it.cover.images" :key="index">
                       <van-image :src="item" />
                     </van-grid-item>
                   </van-grid>
-
-                  <div class="one" v-if="it.cover.type==1">
-                    <span class="title">{{it.title}}</span>
-                    <van-image :src="it.cover.images[0]" />
-                  </div>
 
                   <div class="writer">
                     <div>
@@ -189,7 +188,7 @@ export default {
           display: flex;
           justify-content: space-between;
           margin-bottom: 16px;
-          .van-image{
+          .van-image {
             width: 116px;
             height: 73px;
           }
